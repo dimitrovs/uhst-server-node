@@ -3,6 +3,7 @@ import fetch from 'node-fetch';
 export enum AnalyticsEvent {
     INIT_HOST = 'init_host',
     INIT_CLIENT = 'init_client',
+    INIT_ECHO = 'init_echo',
     SEND_MESSAGE = 'send_message',
     SUBSCRIBE = 'subscribe',
     ERROR = 'error'

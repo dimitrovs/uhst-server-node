@@ -25,13 +25,14 @@ app.set('public', process.env.UHST_PUBLIC_RELAY);
 app.use(cors());
 app.use(express.json());
 
-enum ActionTypes { HOST = 'host', JOIN = 'join' }
+enum ActionTypes { HOST = 'host', JOIN = 'join', ECHO = 'echo' }
 
 /**
  * Primary app routes.
  */
 app.post('/', (req, res, next) => { ActionTypes.HOST == req.query.action ? next() : next('route') }, apiController.initHost);
 app.post('/', (req, res, next) => { ActionTypes.JOIN == req.query.action ? next() : next('route') }, apiController.initClient);
+app.post('/', (req, res, next) => { ActionTypes.ECHO == req.query.action ? next() : next('route') }, apiController.initEcho);
 app.post('/', protect, apiController.sendMessage);
 // flushHeaders should be false to allow rejecting the connection after inspecting request (status 400)
 app.get('/', protect, sse(/* options */ { flushHeaders: false }), apiController.listen);

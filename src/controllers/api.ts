@@ -63,6 +63,43 @@ export const initHost = async (req: Request, res: Response) => {
 };
 
 /**
+ * Initialize echo configuration. If hostId is provided it will
+ * be used, otherwise a random id will be generated.
+ * Returns clientToken which is required for broadcasting messages
+ * to other clients and listening for messages.
+ * 
+ * @route POST /?action=echo[&hostId=<optional-host-id>]
+ */
+ export const initEcho = async (req: Request, res: Response) => {
+    const gaClientId = newGaClientId();
+    let hostId = req.query.hostId as string;
+    if (!hostId) {
+        hostId = await getHostId(req);
+    }
+    if (isHostConnected(hostId)) {
+        logEvent(AnalyticsEvent.ERROR, gaClientId, {
+            [AnalyticsParam.ERROR_REASON]: AnalyticsErrorReason.HOST_ALREADY_CONNECTED,
+            [AnalyticsParam.HOST_ID]: hostId
+        });
+        res.sendStatus(400);
+    } else {
+        const clientToken: ClientTokenPayload = {
+            type: TokenType.ECHO,
+            clientId: uuidv4(),
+            hostId: hostId,
+            gaClientId: gaClientId
+        }
+        const config: ClientConfiguration = {
+            clientToken: signToken(clientToken)
+        }
+        logEvent(AnalyticsEvent.INIT_ECHO, gaClientId, {
+            [AnalyticsParam.HOST_ID]: clientToken.hostId
+        });
+        res.send(config);
+    }
+};
+
+/**
  * Initialize client configuration for connecting to host
  * identified by hostId. If the host is not listening for
  * messages it returns error 400.

@@ -38,6 +38,19 @@ describe("POST /?action=host&hostId=", () => {
     });
 });
 
+describe("POST /?action=echo", () => {
+    it("should return EchoConfiguration", (done) => {
+        request(server).post("/?action=echo")
+            .expect((res) => {
+                const config: ClientConfiguration = JSON.parse(res.text);
+                const tokenPayload: ClientTokenPayload = decodeToken(config.clientToken) as ClientTokenPayload;
+                expect(config.clientToken, "clientToken should not be null").to.not.be.null;
+                expect(tokenPayload.hostId.length, "hostId should be encoded in echo token").to.be.greaterThan(0);
+                expect(tokenPayload.type, "toke type should be echoToken").to.equal("echoToken");
+            }).end(done);
+    });
+});
+
 describe("POST /?action=host&hostId=test", () => {
     it("should return HostConfiguration with hostId and hostToken", (done) => {
         request(server).post(`/?action=host&hostId=test`)
